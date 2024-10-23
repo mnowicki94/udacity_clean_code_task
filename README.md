@@ -1,5 +1,7 @@
 # Predict Customer Churn
 
+REQUIRED: python 3.10
+
 - Project **Predict Customer Churn** of ML DevOps Engineer Nanodegree Udacity
 
 ## Project Description
