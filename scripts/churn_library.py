@@ -1,5 +1,8 @@
 """
-Library of functions to find customers who are likely to churn
+Author: Maciej N. 
+Date Created: 2024-10-24
+
+This modules stores functions needed to perform churn modeling.
 """
 
 # import libraries
