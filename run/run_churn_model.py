@@ -3,8 +3,8 @@ Author: Maciej N.
 Date Created: 2024-10-24
 
 This script executes the ChurnPrediction class methods from the churn_library module
-and uses constants from the constants.py file. It performs the full process from 
-data import, churn calculation, EDA, feature engineering, model training, and result 
+and uses constants from the constants.py file. It performs the full process from
+data import, churn calculation, EDA, feature engineering, model training, and result
 visualization. The script logs the progress and outcomes in a separate log file.
 
 To run this script, use the following command:
@@ -149,5 +149,5 @@ if __name__ == "__main__":
     # Logging the total time taken for execution
     logging.info(
         "Modeling pipeline finished successfully. It took: %s minutes",
-        (time.time() - start_time) / 60
+        (time.time() - start_time) / 60,
     )

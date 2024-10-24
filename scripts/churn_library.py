@@ -2,8 +2,8 @@
 Author: Maciej N.
 Date Created: 2024-10-24
 
-This module stores functions and methods needed to perform churn modeling, 
-including data loading, exploratory data analysis (EDA), feature engineering, 
+This module stores functions and methods needed to perform churn modeling,
+including data loading, exploratory data analysis (EDA), feature engineering,
 and model training.
 """
 
@@ -35,7 +35,7 @@ class ChurnPrediction:
     def __init__(self, data_path=None):
         """
         Initialize the class with an optional data path to load the dataset.
-        
+
         Input:
         - data_path: str, default None. Path to the CSV file containing customer data.
         """
@@ -47,7 +47,7 @@ class ChurnPrediction:
     def check_folder_exists(folder_path):
         """
         Check if a folder exists; if not, create it.
-        
+
         Input:
         - folder_path: str. The path of the folder to check or create.
         """
@@ -57,7 +57,7 @@ class ChurnPrediction:
     def import_data(self):
         """
         Load data from the provided CSV file path into a pandas DataFrame.
-        
+
         Output:
         - self.df: pandas DataFrame containing the loaded data.
         """
@@ -65,9 +65,9 @@ class ChurnPrediction:
 
     def calculate_churn(self):
         """
-        Add a 'Churn' column to the DataFrame based on the 'Attrition_Flag' column. 
+        Add a 'Churn' column to the DataFrame based on the 'Attrition_Flag' column.
         A value of 1 is assigned if 'Attrition_Flag' indicates 'Attrited Customer', otherwise 0.
-        
+
         Output:
         - self.df: pandas DataFrame with a new 'Churn' column.
         """
@@ -107,12 +107,20 @@ class ChurnPrediction:
         self.save_plot(df["Customer_Age"].hist, "./images/eda/customer_age.png")
 
         # Plot the marital status bar chart
-        self.save_plot(df.Marital_Status.value_counts("normalize").plot, 
-                       "./images/eda/marital_status.png", kind="bar")
+        self.save_plot(
+            df.Marital_Status.value_counts("normalize").plot,
+            "./images/eda/marital_status.png",
+            kind="bar",
+        )
 
         # Plot the total transaction count density plot
-        self.save_plot(sns.histplot, "./images/eda/total_trans_ct.png", 
-                       df["Total_Trans_Ct"], stat="density", kde=True)
+        self.save_plot(
+            sns.histplot,
+            "./images/eda/total_trans_ct.png",
+            df["Total_Trans_Ct"],
+            stat="density",
+            kde=True,
+        )
 
         # Plot the correlation heatmap
         plt.figure(figsize=(20, 10))  # Heatmap has a different setup
@@ -123,7 +131,7 @@ class ChurnPrediction:
     @staticmethod
     def encoder_helper(df, category_lst, response):
         """
-        Helper function to encode categorical columns by calculating the proportion 
+        Helper function to encode categorical columns by calculating the proportion
         of churn for each category in the specified column.
 
         Input:
@@ -160,7 +168,9 @@ class ChurnPrediction:
         x = pd.DataFrame()
         x[keep_cols] = df[keep_cols]
 
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+        x_train, x_test, y_train, y_test = train_test_split(
+            x, y, test_size=0.3, random_state=42
+        )
 
         return x, x_train, x_test, y_train, y_test
 
@@ -224,20 +234,52 @@ class ChurnPrediction:
 
         # Plot and save RandomForest results
         plt.rc("figure", figsize=(7, 7))
-        plt.text(0.01, 1.25, "Random Forest Train", {"fontsize": 10}, fontproperties="monospace")
-        plt.text(0.01, 0.05, str(classification_report(y_test, y_test_preds_rf)), {"fontsize": 10})
+        plt.text(
+            0.01,
+            1.25,
+            "Random Forest Train",
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )
+        plt.text(
+            0.01,
+            0.05,
+            str(classification_report(y_test, y_test_preds_rf)),
+            {"fontsize": 10},
+        )
         plt.text(0.01, 0.6, "Random Forest Test", {"fontsize": 10})
-        plt.text(0.01, 0.7, str(classification_report(y_train, y_train_preds_rf)), {"fontsize": 10})
+        plt.text(
+            0.01,
+            0.7,
+            str(classification_report(y_train, y_train_preds_rf)),
+            {"fontsize": 10},
+        )
         plt.axis("off")
         plt.savefig("./images/results/rf_results.png")
         plt.close()
 
         # Plot and save LogisticRegression results
         plt.rc("figure", figsize=(7, 7))
-        plt.text(0.01, 1.25, "Logistic Regression Train", {"fontsize": 10}, fontproperties="monospace")
-        plt.text(0.01, 0.05, str(classification_report(y_train, y_train_preds_lr)), {"fontsize": 10})
+        plt.text(
+            0.01,
+            1.25,
+            "Logistic Regression Train",
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )
+        plt.text(
+            0.01,
+            0.05,
+            str(classification_report(y_train, y_train_preds_lr)),
+            {"fontsize": 10},
+        )
         plt.text(0.01, 0.6, "Logistic Regression Test", {"fontsize": 10})
-        plt.text(0.01, 0.7, str(classification_report(y_test, y_test_preds_lr)), {"fontsize": 10})
+        plt.text(
+            0.01,
+            0.7,
+            str(classification_report(y_test, y_test_preds_lr)),
+            {"fontsize": 10},
+        )
         plt.axis("off")
         plt.savefig("./images/results/lr_results.png")
         plt.close()

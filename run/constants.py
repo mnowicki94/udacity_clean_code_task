@@ -3,7 +3,7 @@ Author: Maciej N.
 Date Created: 2024-10-24
 
 This module contains constant variables used in the churn prediction library.
-These constants include paths to data, lists of quantitative and categorical 
+These constants include paths to data, lists of quantitative and categorical
 columns, and lists of columns to be used for feature engineering in model training.
 """
 

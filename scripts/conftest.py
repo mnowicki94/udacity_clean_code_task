@@ -1,5 +1,5 @@
 """
-Author: Maciej N. 
+Author: Maciej N.
 Date Created: 2024-10-24
 
 This conftest module ensures that logging is configured before running tests in the churn prediction library.
@@ -24,6 +24,7 @@ logging.basicConfig(
     filemode="w",
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
+
 
 @pytest.fixture(autouse=True)
 def run_around_tests():

@@ -21,10 +21,10 @@ def churn_prediction_fixture():
 
     Purpose:
         Initialize the ChurnPrediction instance, import data, and calculate churn.
-    
+
     Inputs:
         None (retrieves the path and settings from constants).
-    
+
     Outputs:
         cp (ChurnPrediction): Instance of ChurnPrediction with imported data.
     """
@@ -39,7 +39,7 @@ class TestChurnPrediction:
     Test suite for ChurnPrediction class methods.
 
     This class runs various tests on key methods of the ChurnPrediction
-    class to ensure functionality, including importing data, encoding 
+    class to ensure functionality, including importing data, encoding
     categorical columns, feature engineering, and model training.
 
     Author: Maciej N.
@@ -53,10 +53,10 @@ class TestChurnPrediction:
 
         Purpose:
             To initialize the test class with an instance of ChurnPrediction.
-        
+
         Inputs:
             churn_prediction_fixture (ChurnPrediction): Instance created by the fixture.
-        
+
         Outputs:
             None.
         """
@@ -69,13 +69,13 @@ class TestChurnPrediction:
         Purpose:
             Ensure that the data is imported successfully and that the DataFrame
             is not empty.
-        
+
         Inputs:
             None.
-        
+
         Outputs:
             None. (Assertions are used to verify the conditions)
-        
+
         Logging:
             Logs success if the data is imported properly, otherwise logs the error.
         """
@@ -94,13 +94,13 @@ class TestChurnPrediction:
         Purpose:
             To verify that the encoder_helper method successfully encodes all
             categorical columns and adds new columns without null values.
-        
+
         Inputs:
             None. (Uses instance data and predefined categorical columns from constants)
-        
+
         Outputs:
             None. (Assertions are used to verify the conditions)
-        
+
         Logging:
             Logs success if encoding is done correctly, otherwise logs the error.
         """
@@ -136,13 +136,13 @@ class TestChurnPrediction:
         Purpose:
             To ensure that the feature engineering method splits the data
             correctly into features and target sets, and provides train/test splits.
-        
+
         Inputs:
             None. (Uses instance data and predefined keep columns)
-        
+
         Outputs:
             None. (Assertions are used to verify the conditions)
-        
+
         Logging:
             Logs success if the feature engineering is done correctly, otherwise logs the error.
         """
@@ -172,13 +172,13 @@ class TestChurnPrediction:
         Purpose:
             To verify that the model training method successfully trains models
             and generates predictions based on a small subset of data.
-        
+
         Inputs:
             None. (Uses a subset of the instance data)
-        
+
         Outputs:
             None. (Assertions are used to verify the conditions)
-        
+
         Logging:
             Logs success if models are trained correctly, otherwise logs the error.
         """
@@ -200,9 +200,7 @@ class TestChurnPrediction:
                 x_train, x_test, y_train
             )
             assert len(preds) == 4  # Should return 4 files
-            logging.info(
-                "Models trained successfully and predictions generated."
-            )
+            logging.info("Models trained successfully and predictions generated.")
         except FileNotFoundError as e:
             logging.error(
                 "File not found, run modeling first: %s",
@@ -220,10 +218,10 @@ class TestChurnPrediction:
 
         Inputs:
             None.
-        
+
         Outputs:
             None. (The test checks if the logging mechanism works)
-        
+
         Logging:
             Logs a fake error for testing purposes.
         """
