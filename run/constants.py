@@ -1,9 +1,16 @@
 """
-constants for churn library
+Author: Maciej N.
+Date Created: 2024-10-24
+
+This module contains constant variables used in the churn prediction library.
+These constants include paths to data, lists of quantitative and categorical 
+columns, and lists of columns to be used for feature engineering in model training.
 """
 
+# Path to the data file containing customer information for churn analysis
 DATA_PATH = "./data/bank_data.csv"
 
+# List of quantitative columns used for Exploratory Data Analysis (EDA) and model features
 QUANT_COLUMNS = [
     "Customer_Age",
     "Dependent_count",
@@ -21,6 +28,7 @@ QUANT_COLUMNS = [
     "Avg_Utilization_Ratio",
 ]
 
+# List of categorical columns used for encoding in the feature engineering process
 CAT_COLUMNS = [
     "Gender",
     "Education_Level",
@@ -29,6 +37,7 @@ CAT_COLUMNS = [
     "Card_Category",
 ]
 
+# List of columns to be retained for model training after feature engineering
 KEEP_COLUMNS = [
     "Customer_Age",
     "Dependent_count",
@@ -44,6 +53,7 @@ KEEP_COLUMNS = [
     "Total_Trans_Ct",
     "Total_Ct_Chng_Q4_Q1",
     "Avg_Utilization_Ratio",
+    # Encoded categorical columns for churn prediction
     "Gender_Churn",
     "Education_Level_Churn",
     "Marital_Status_Churn",
