@@ -1,6 +1,7 @@
 """
 Author: Maciej N. 
 Date Created: 2024-10-24
+
 This conftest ensures that logging is configured before running tests
 """
 
