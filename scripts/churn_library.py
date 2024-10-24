@@ -1,8 +1,10 @@
 """
-Author: Maciej N. 
+Author: Maciej N.
 Date Created: 2024-10-24
 
-This modules stores functions needed to perform churn modeling.
+This module stores functions and methods needed to perform churn modeling, 
+including data loading, exploratory data analysis (EDA), feature engineering, 
+and model training.
 """
 
 # import libraries
@@ -20,6 +22,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import RocCurveDisplay, classification_report
 
 
+# Set an environment variable to prevent display-related errors when running on servers
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 
@@ -31,7 +34,10 @@ class ChurnPrediction:
 
     def __init__(self, data_path=None):
         """
-        Initialize the class with optional data path.
+        Initialize the class with an optional data path to load the dataset.
+        
+        Input:
+        - data_path: str, default None. Path to the CSV file containing customer data.
         """
         self.data_path = data_path
         self.df = None
@@ -40,36 +46,34 @@ class ChurnPrediction:
     @staticmethod
     def check_folder_exists(folder_path):
         """
-        check if folder exists
+        Check if a folder exists; if not, create it.
+        
+        Input:
+        - folder_path: str. The path of the folder to check or create.
         """
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
     def import_data(self):
         """
-        returns dataframe for the csv found at pth
-
-        input:
-                pth: a path to the csv
-        output:
-                df: pandas dataframe
+        Load data from the provided CSV file path into a pandas DataFrame.
+        
+        Output:
+        - self.df: pandas DataFrame containing the loaded data.
         """
         self.df = pd.read_csv(self.data_path)
 
     def calculate_churn(self):
         """
-        returns a dataframe with a new column 'Churn'
-
-        input:
-                df: pandas dataframe
-        output:
-                df: pandas dataframe with new column 'Churn'
+        Add a 'Churn' column to the DataFrame based on the 'Attrition_Flag' column. 
+        A value of 1 is assigned if 'Attrition_Flag' indicates 'Attrited Customer', otherwise 0.
+        
+        Output:
+        - self.df: pandas DataFrame with a new 'Churn' column.
         """
-
         self.df["Churn"] = self.df["Attrition_Flag"].apply(
             lambda val: 0 if val == "Existing Customer" else 1
         )
-
         return self.df
 
     @staticmethod
@@ -77,11 +81,11 @@ class ChurnPrediction:
         """
         Helper function to create and save a plot.
 
-        Parameters:
-            plot_func: The plotting function to call (e.g., plt.hist, sns.histplot).
-            filename: The path where the plot will be saved.
-            *args: Positional arguments to pass to the plotting function.
-            **kwargs: Keyword arguments to pass to the plotting function.
+        Input:
+        - plot_func: Callable. The plotting function to call (e.g., plt.hist, sns.histplot).
+        - filename: str. The path where the plot will be saved.
+        - *args: Additional positional arguments for the plotting function.
+        - **kwargs: Additional keyword arguments for the plotting function.
         """
         plt.figure(figsize=(20, 10))
         plot_func(*args, **kwargs)
@@ -90,68 +94,48 @@ class ChurnPrediction:
 
     def perform_eda(self, df, quant_columns):
         """
-        perform eda on df and save figures to images folder
-        input:
-                df: pandas dataframe
-                quant_columns: list of numerical columns
+        Perform exploratory data analysis (EDA) on the DataFrame and save figures to the 'images' folder.
 
-        output:
-                None
+        Input:
+        - df: pandas DataFrame. The dataset to analyze.
+        - quant_columns: list. List of numerical columns for generating correlation heatmap.
         """
-
         # Plot the churn histogram
         self.save_plot(df["Churn"].hist, "./images/eda/churn.png")
 
         # Plot the customer age histogram
-        self.save_plot(
-            df["Customer_Age"].hist,
-            "./images/eda/customer_age.png")
+        self.save_plot(df["Customer_Age"].hist, "./images/eda/customer_age.png")
 
         # Plot the marital status bar chart
-        self.save_plot(
-            df.Marital_Status.value_counts("normalize").plot,
-            "./images/eda/marital_status.png",
-            kind="bar",
-        )
+        self.save_plot(df.Marital_Status.value_counts("normalize").plot, 
+                       "./images/eda/marital_status.png", kind="bar")
 
         # Plot the total transaction count density plot
-        self.save_plot(
-            sns.histplot,
-            "./images/eda/total_trans_ct.png",
-            df["Total_Trans_Ct"],
-            stat="density",
-            kde=True,
-        )
+        self.save_plot(sns.histplot, "./images/eda/total_trans_ct.png", 
+                       df["Total_Trans_Ct"], stat="density", kde=True)
 
         # Plot the correlation heatmap
         plt.figure(figsize=(20, 10))  # Heatmap has a different setup
-        sns.heatmap(
-            df[quant_columns].corr(),
-            annot=False,
-            cmap="Dark2_r",
-            linewidths=2)
+        sns.heatmap(df[quant_columns].corr(), annot=False, cmap="Dark2_r", linewidths=2)
         plt.savefig("./images/eda/correlations.png")
         plt.close()
 
     @staticmethod
     def encoder_helper(df, category_lst, response):
         """
-        helper function to turn each categorical column into a new column with
-        propotion of churn for each category - associated with cell 15 from the notebook
+        Helper function to encode categorical columns by calculating the proportion 
+        of churn for each category in the specified column.
 
-        input:
-                df: pandas dataframe
-                category_lst: list of columns that contain categorical features
-                response: string of response name [optional argument that could be used for naming
-                variables or index y column]
+        Input:
+        - df: pandas DataFrame. The dataset containing categorical columns.
+        - category_lst: list. List of categorical column names to encode.
+        - response: str. The target column name ('Churn') used for encoding.
 
-        output:
-                df: pandas dataframe with new columns for
+        Output:
+        - df: pandas DataFrame with new encoded columns.
         """
-
         for column in category_lst:
             churn_groups = df.groupby(column)[response].mean()
-
             df[f"{column}_{response}"] = df[column].map(churn_groups)
 
         return df
@@ -159,53 +143,42 @@ class ChurnPrediction:
     @staticmethod
     def perform_feature_engineering(df, keep_cols):
         """
-        input:
-                df: pandas dataframe
-                variables or index y column]
+        Split the DataFrame into training and test datasets based on selected columns.
 
-        output:
-                x: x data
-                x_train: X training data
-                x_test: X testing data
-                y_train: y training data
-                y_test: y testing data
+        Input:
+        - df: pandas DataFrame. The dataset to split.
+        - keep_cols: list. List of column names to keep for the model.
+
+        Outputs:
+        - x: pandas DataFrame containing selected feature columns.
+        - x_train: X training data.
+        - x_test: X testing data.
+        - y_train: y training data.
+        - y_test: y testing data.
         """
         y = df["Churn"]
         x = pd.DataFrame()
-
         x[keep_cols] = df[keep_cols]
 
-        # This cell may take up to 15-20 minutes to run
-        # train test split
-        x_train, x_test, y_train, y_test = train_test_split(
-            x, y, test_size=0.3, random_state=42
-        )
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
 
-        return (
-            x,
-            x_train,
-            x_test,
-            y_train,
-            y_test,
-        )
+        return x, x_train, x_test, y_train, y_test
 
     def train_models(self, x_train, x_test, y_train):
         """
-        train, store model results: images + scores, and store models
-        input:
-                x_train: X training data
-                x_test: X testing data
-                y_train: y training data
-                y_test: y testing data
-        output:
-                None
-        """
+        Train RandomForest and LogisticRegression models using the training data.
+        Save the trained models and return predicted values for both models.
 
-        # grid search
+        Input:
+        - x_train: pandas DataFrame. The training feature data.
+        - x_test: pandas DataFrame. The testing feature data.
+        - y_train: pandas Series. The target training data.
+
+        Outputs:
+        - y_train_preds_rf, y_train_preds_lr, y_test_preds_rf, y_test_preds_lr: Predicted values for both models.
+        """
+        # Random Forest and Logistic Regression model setup
         rfc = RandomForestClassifier(random_state=42)
-        # Use a different solver if the default 'lbfgs' fails to converge
-        # Reference:
-        # https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
         lrc = LogisticRegression(solver="lbfgs", max_iter=3000)
 
         param_grid = {
@@ -215,43 +188,32 @@ class ChurnPrediction:
             "criterion": ["gini", "entropy"],
         }
 
+        # Grid search for Random Forest
         cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
         cv_rfc.fit(x_train, y_train)
-
         lrc.fit(x_train, y_train)
 
+        # Get predictions
         y_train_preds_rf = cv_rfc.best_estimator_.predict(x_train)
         y_test_preds_rf = cv_rfc.best_estimator_.predict(x_test)
-
         y_train_preds_lr = lrc.predict(x_train)
         y_test_preds_lr = lrc.predict(x_test)
 
-        # save best model
+        # Save models
         joblib.dump(cv_rfc.best_estimator_, "./models/rfc_model.pkl")
         joblib.dump(lrc, "./models/lrc_model.pkl")
 
-        return (
-            y_train_preds_rf,
-            y_train_preds_lr,
-            y_test_preds_rf,
-            y_test_preds_lr)
+        return y_train_preds_rf, y_train_preds_lr, y_test_preds_rf, y_test_preds_lr
 
     @staticmethod
     def classification_report_image(actual_data, predicted_data):
         """
-        Produces classification report for training and testing results and stores report as image
-        in images folder.
+        Generate and save classification reports for both training and testing sets.
 
-        input:
-            actual_data: dictionary with 'y_train' and 'y_test' actual values
-            predicted_data: dictionary with predicted values for each model (random forest
-            and logistic regression)
-
-        output:
-            None
+        Input:
+        - actual_data: dict. Contains actual 'y_train' and 'y_test' values.
+        - predicted_data: dict. Contains predicted values for RandomForest and LogisticRegression models.
         """
-
-        # Unpack actual and predicted values
         y_train = actual_data["y_train"]
         y_test = actual_data["y_test"]
 
@@ -260,69 +222,22 @@ class ChurnPrediction:
         y_test_preds_rf = predicted_data["y_test_preds_rf"]
         y_test_preds_lr = predicted_data["y_test_preds_lr"]
 
-        # plot
+        # Plot and save RandomForest results
         plt.rc("figure", figsize=(7, 7))
-        plt.text(
-            0.01,
-            1.25,
-            str("Random Forest Train"),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
-        plt.text(
-            0.01,
-            0.05,
-            str(classification_report(y_test, y_test_preds_rf)),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
-        plt.text(
-            0.01,
-            0.6,
-            str("Random Forest Test"),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
-        plt.text(
-            0.01,
-            0.7,
-            str(classification_report(y_train, y_train_preds_rf)),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
+        plt.text(0.01, 1.25, "Random Forest Train", {"fontsize": 10}, fontproperties="monospace")
+        plt.text(0.01, 0.05, str(classification_report(y_test, y_test_preds_rf)), {"fontsize": 10})
+        plt.text(0.01, 0.6, "Random Forest Test", {"fontsize": 10})
+        plt.text(0.01, 0.7, str(classification_report(y_train, y_train_preds_rf)), {"fontsize": 10})
         plt.axis("off")
         plt.savefig("./images/results/rf_results.png")
         plt.close()
 
+        # Plot and save LogisticRegression results
         plt.rc("figure", figsize=(7, 7))
-        plt.text(
-            0.01,
-            1.25,
-            str("Logistic Regression Train"),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
-        plt.text(
-            0.01,
-            0.05,
-            str(classification_report(y_train, y_train_preds_lr)),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
-        plt.text(
-            0.01,
-            0.6,
-            str("Logistic Regression Test"),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
-        plt.text(
-            0.01,
-            0.7,
-            str(classification_report(y_test, y_test_preds_lr)),
-            {"fontsize": 10},
-            fontproperties="monospace",
-        )
+        plt.text(0.01, 1.25, "Logistic Regression Train", {"fontsize": 10}, fontproperties="monospace")
+        plt.text(0.01, 0.05, str(classification_report(y_train, y_train_preds_lr)), {"fontsize": 10})
+        plt.text(0.01, 0.6, "Logistic Regression Test", {"fontsize": 10})
+        plt.text(0.01, 0.7, str(classification_report(y_test, y_test_preds_lr)), {"fontsize": 10})
         plt.axis("off")
         plt.savefig("./images/results/lr_results.png")
         plt.close()
@@ -330,35 +245,21 @@ class ChurnPrediction:
     @staticmethod
     def feature_importance_plot(rf_model, x_data, output_pth):
         """
-        creates and stores the feature importances in pth
-        input:
-                model: model object containing feature_importances_
-                x_data: pandas dataframe of X values
-                output_pth: path to store the figure
+        Generate and save a bar plot showing feature importance based on the trained RandomForest model.
 
-        output:
-                None
+        Input:
+        - rf_model: str. Path to the saved RandomForest model file.
+        - x_data: pandas DataFrame. Feature data used for training.
+        - output_pth: str. Path to save the plot.
         """
-        # import model
         rfc_model = joblib.load(rf_model)
-
-        # Calculate feature importances
         importances = rfc_model.feature_importances_
-
-        # Sort feature importances in descending order
         indices = np.argsort(importances)[::-1]
-
-        # Rearrange feature names so they match the sorted feature importances
         names = [x_data.columns[i] for i in indices]
 
-        # Create plot
         plt.figure(figsize=(20, 5))
-
         plt.title("Feature Importance")
-        plt.ylabel("Importance")
-
         plt.bar(range(x_data.shape[1]), importances[indices])
-
         plt.xticks(range(x_data.shape[1]), names, rotation=90)
         plt.savefig(output_pth)
         plt.close()
@@ -366,54 +267,40 @@ class ChurnPrediction:
     @staticmethod
     def roc_plot(rf_model, lr_model, x_test, y_test, output_pth):
         """
-        creates and stores roc plot in pth
-        input:
-                model: model object containing feature_importances_
-                X_data: pandas dataframe of X values
-                output_pth: path to store the figure
+        Generate and save ROC curve plots for RandomForest and LogisticRegression models.
 
-        output:
-                None
+        Input:
+        - rf_model: str. Path to the saved RandomForest model file.
+        - lr_model: str. Path to the saved LogisticRegression model file.
+        - x_test: pandas DataFrame. Test feature data.
+        - y_test: pandas Series. True test labels.
+        - output_pth: str. Path to save the plot.
         """
         rfc_model = joblib.load(rf_model)
         lrc_model = joblib.load(lr_model)
 
         plt.figure(figsize=(15, 8))
         ax = plt.gca()
-
-        RocCurveDisplay.from_estimator(
-            rfc_model, x_test, y_test, ax=ax, alpha=0.8)
-        RocCurveDisplay.from_estimator(
-            lrc_model, x_test, y_test, ax=ax, alpha=0.8)
-
+        RocCurveDisplay.from_estimator(rfc_model, x_test, y_test, ax=ax, alpha=0.8)
+        RocCurveDisplay.from_estimator(lrc_model, x_test, y_test, ax=ax, alpha=0.8)
         plt.savefig(output_pth)
         plt.close()
 
     @staticmethod
     def rf_explainer_plot(rf_model, x_test, output_pth):
         """
-        creates and stores explainer of random forest plot in pth
-        input:
-                model: model object containing feature_importances_
-                X_data: pandas dataframe of X values
-                output_pth: path to store the figure
+        Generate and save a SHAP explainer plot for the RandomForest model.
 
-        output:
-                None
+        Input:
+        - rf_model: str. Path to the saved RandomForest model file.
+        - x_test: pandas DataFrame. Test feature data.
+        - output_pth: str. Path to save the plot.
         """
-        # Load the model
         rfc_model = joblib.load(rf_model)
-
-        # Create the SHAP explainer
         explainer = shap.TreeExplainer(rfc_model)
-
-        # Calculate SHAP values
         shap_values = explainer.shap_values(x_test)
 
-        # Create the summary plot
         plt.figure(figsize=(10, 6))
         shap.summary_plot(shap_values, x_test, plot_type="bar", show=False)
-
-        # Save the plot as a PNG file
         plt.savefig(output_pth, format="png", dpi=300)
         plt.close()
