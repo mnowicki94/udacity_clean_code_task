@@ -1,1 +1,13 @@
+# Ignore all files and folders starting with a dot (.)
+.*
+
+# Except for those:
+!.gitignore
+!.pylintrc
 *env*/
+*.cpython*
+
+# images/
+# logs/
+# models/
+# notebooks/
