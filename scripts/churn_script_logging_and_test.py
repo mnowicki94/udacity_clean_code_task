@@ -1,5 +1,9 @@
 """
-unit tests for churn library
+Author: Maciej N. 
+Date Created: 2024-10-24
+
+This modules tests different functions from churn_library module.
+Also it logs any infor/error into a seperate file.
 """
 
 import logging
