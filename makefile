@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 PYTHON_VERSION_FILE := 3.10
 PYTHON_VERSION := $(shell cat $(PYTHON_VERSION_FILE))
-ENV_NAME := env_udacity_clean_code_task
+ENV_NAME := env
 
 # Local (non-Docker) commands
 
@@ -40,7 +40,7 @@ CONTAINER_NAME := udacity_churn_model_container
 
 # Builds the Docker image
 docker-build:
-	docker build -t ${IMAGE_NAME} .
+	docker build --no-cache -t ${IMAGE_NAME} .
 
 # Runs the model inside Docker
 docker-run-modeling:
