@@ -12,7 +12,7 @@ create-env:
 		rm -rf ${ENV_NAME} && \
 		python${PYTHON_VERSION} -m venv ${ENV_NAME} && \
 		source ${ENV_NAME}/bin/activate && \
-		pipinstall --upgrade pip && \
+		pip install --upgrade pip && \
 		pip install -r requirements.txt \
 	)
 
