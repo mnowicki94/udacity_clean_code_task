@@ -49,7 +49,7 @@ docker-run-modeling:
     # would automatically close container after finish
 
 # Runs the tests inside Docker
-docker-test:
+docker-run-tests:
 	docker run --name ${CONTAINER_NAME} ${IMAGE_NAME} make run-tests
 
 # Copies results from Docker container to local "results_from_docker" folder

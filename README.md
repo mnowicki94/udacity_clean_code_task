@@ -54,7 +54,7 @@ unit tests.
 - **Makefile**: A Makefile is included in the project for automating tasks. Make sure you have `make` installed on your system.
 
 
-## Running Files
+## Running Files locally
 Running steps are specified in makefile.
 
 1. Create a virtual environment:
@@ -66,3 +66,26 @@ $ make run-modeling
 3. Run unit tests:
 $ make run-tests
 
+## Running Files in Docker
+Running steps are specified in makefile.
+
+1. Create a virtual environment:
+$ make docker-build
+
+2. Run the churn prediction pipeline:
+$ make docker-run-modeling
+
+3. Stop container:
+$ make docker-stop
+
+4. Run unit tests:
+$ make docker-run-tests
+
+5. Stop container:
+$ make docker-stop
+
+6. Copy results to local directory:
+$ make docker-copy-results
+
+7. Stop container:
+$ make docker-stop
