@@ -1,14 +1,17 @@
-# Ignore all files and folders starting with a dot (.)
+# Ignore hidden files and directories (dotfiles)
 .*
-
-# Except for those:
+# Allow specific hidden files
 !.gitignore
 !.pylintrc
+
+# Ignore virtual environment folders
 *env*/
+
+# Ignore compiled Python files
 *.cpython*
 
-images/
-logs/
-models/
-notebooks/
-results_from_docker/
+
+# Ignore specific file types across all directories
+*.png         # Image files
+*.pkl         # Pickle files
+*.log         # Log files

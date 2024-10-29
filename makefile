@@ -1,13 +1,12 @@
 # Define environment and Python version variables
 SHELL := /bin/bash
-PYTHON_VERSION := 3.10
+PYTHON_VERSION := 3
 ENV_NAME := env
 DOCKER_IMAGE := my-churn-model
 DOCKERFILE := dockerfile
+DATA_VOLUME := churn_model_data
 
 # Local (non-Docker) commands
-
-# Creates the Python virtual environment locally
 create-env:
 	( \
 		rm -rf ${ENV_NAME} && \
@@ -17,7 +16,6 @@ create-env:
 		pip install -r requirements.txt \
 	)
 
-# Run the churn model locally
 run-modeling:
 	time ( \
 		source ${ENV_NAME}/bin/activate && \
@@ -25,7 +23,6 @@ run-modeling:
 		python run/run_churn_model.py \
 	)
 
-# Run tests locally
 run-tests:
 	time ( \
 		source ${ENV_NAME}/bin/activate && \
@@ -35,40 +32,35 @@ run-tests:
 
 # Docker commands
 
-# Build the Docker image
 docker-build:
 	docker build -t ${DOCKER_IMAGE} -f ${DOCKERFILE} .
 
-# Create the environment inside Docker
-docker-create-env:
-	docker run --rm --name churn-model-container-create-env ${DOCKER_IMAGE} create-env
-
-# Run the modeling inside Docker
+# Run the modeling inside Docker and save output to the named volume
 docker-run-modeling:
-	docker run --rm --name churn-model-container-run-modeling ${DOCKER_IMAGE} run-modeling
+	docker run --rm --name churn-model-container-run-modeling \
+		-v ${DATA_VOLUME}:/app ${DOCKER_IMAGE} run-modeling
 
-# Run tests inside Docker
+# Run tests inside Docker using the data saved in the volume
 docker-run-tests:
-	docker run --name churn-model-container-run-tests ${DOCKER_IMAGE} run-tests
+	docker run --name churn-model-container-run-tests \
+		-v ${DATA_VOLUME}:/app ${DOCKER_IMAGE} run-tests
 
-# Copy results from Docker container to local "results_from_docker" folder
+# Copy results from Docker volume to local "results_from_docker" folder
 docker-copy-results:
-	mkdir -p results_from_docker
-	docker cp churn-model-container-run-tests:/app/images results_from_docker/images && \
-	docker cp churn-model-container-run-tests:/app/models results_from_docker/models && \
-	docker cp churn-model-container-run-tests:/app/logs results_from_docker/logs
+	mkdir -p results_from_docker/logs results_from_docker/images results_from_docker/models
+	docker cp churn-model-container-run-tests:/app/logs/. results_from_docker/logs/
+	docker cp churn-model-container-run-tests:/app/images/. results_from_docker/images/
+	docker cp churn-model-container-run-tests:/app/models/. results_from_docker/models/
 
 # Stops and removes Docker containers with a specific name pattern and deletes the Docker image
 docker-stop:
 	docker stop $$(docker ps -q -f "name=churn-model-container-") || true
 	docker rm $$(docker ps -aq -f "name=churn-model-container-") || true
 	docker rmi ${DOCKER_IMAGE} || true
-
-
+	docker volume rm ${DATA_VOLUME} || true
 
 # Run all steps locally
 local-full-run: create-env run-modeling run-tests
 
-# Run all steps in Docker
-docker-full-run: docker-build docker-create-env docker-run-modeling docker-run-tests docker-copy-results docker-stop
-
+# Run all steps in Docker with the volume
+docker-full-run: docker-build docker-run-modeling docker-run-tests docker-copy-results docker-stop
