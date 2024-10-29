@@ -67,7 +67,7 @@ docker-stop:
 
 
 # Run all steps in Docker
-docker-full-run: docker-build docker-create-env docker-run-modeling docker-run-tests docker-copy-results
+docker-full-run: docker-build docker-create-env docker-run-modeling docker-run-tests docker-copy-results docker-stop
 
 # Run all steps locally
 local-full-run: create-env run-modeling run-tests
