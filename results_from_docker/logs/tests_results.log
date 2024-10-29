@@ -1,5 +1,0 @@
-2024-10-29 16:38:07,621 - root - INFO - Data imported successfully and is not empty.
-2024-10-29 16:38:07,628 - root - INFO - Encoder helper ran successfully and added new columns for all categories.
-2024-10-29 16:38:07,634 - root - INFO - Feature engineering completed successfully.
-2024-10-29 16:38:16,489 - root - INFO - Models trained successfully and predictions generated.
-2024-10-29 16:38:16,491 - root - ERROR - This is a fake error condition for testing.
