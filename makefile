@@ -4,7 +4,6 @@ PYTHON_VERSION := 3.10
 ENV_NAME := env
 DOCKER_IMAGE := my-churn-model
 DOCKERFILE := dockerfile
-CONTAINER_NAME := churn-model-container
 
 # Local (non-Docker) commands
 
@@ -42,32 +41,34 @@ docker-build:
 
 # Create the environment inside Docker
 docker-create-env:
-	docker run --rm --name ${CONTAINER_NAME} ${DOCKER_IMAGE} create-env
+	docker run --rm --name churn-model-container-create-env ${DOCKER_IMAGE} create-env
 
 # Run the modeling inside Docker
 docker-run-modeling:
-	docker run --rm --name ${CONTAINER_NAME} ${DOCKER_IMAGE} run-modeling
+	docker run --rm --name churn-model-container-run-modeling ${DOCKER_IMAGE} run-modeling
 
 # Run tests inside Docker
 docker-run-tests:
-	docker run --name ${CONTAINER_NAME} ${DOCKER_IMAGE} run-tests
+	docker run --name churn-model-container-run-tests ${DOCKER_IMAGE} run-tests
 
 # Copy results from Docker container to local "results_from_docker" folder
 docker-copy-results:
 	mkdir -p results_from_docker
-	docker cp ${CONTAINER_NAME}:/app/images results_from_docker/images
-	docker cp ${CONTAINER_NAME}:/app/models results_from_docker/models
-	docker cp ${CONTAINER_NAME}:/app/logs results_from_docker/logs
+	docker cp churn-model-container-run-tests:/app/images results_from_docker/images && \
+	docker cp churn-model-container-run-tests:/app/models results_from_docker/models && \
+	docker cp churn-model-container-run-tests:/app/logs results_from_docker/logs
 
-# Stops the Docker container and clean image
+# Stops and removes Docker containers with a specific name pattern and deletes the Docker image
 docker-stop:
-	docker stop ${CONTAINER_NAME} || true
-	docker rm ${CONTAINER_NAME} || true
+	docker stop $$(docker ps -q -f "name=churn-model-container-") || true
+	docker rm $$(docker ps -aq -f "name=churn-model-container-") || true
 	docker rmi ${DOCKER_IMAGE} || true
 
+
+
+# Run all steps locally
+local-full-run: create-env run-modeling run-tests
 
 # Run all steps in Docker
 docker-full-run: docker-build docker-create-env docker-run-modeling docker-run-tests docker-copy-results docker-stop
 
-# Run all steps locally
-local-full-run: create-env run-modeling run-tests
