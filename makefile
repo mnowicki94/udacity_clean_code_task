@@ -1,8 +1,10 @@
 # Define environment and Python version variables
 SHELL := /bin/bash
-PYTHON_VERSION_FILE := 3.10
-PYTHON_VERSION := $(shell cat $(PYTHON_VERSION_FILE))
+PYTHON_VERSION := 3.10
 ENV_NAME := env
+DOCKER_IMAGE := my-churn-model
+DOCKERFILE := dockerfile
+CONTAINER_NAME := churn-model-container
 
 # Local (non-Docker) commands
 
@@ -32,34 +34,40 @@ run-tests:
 		pytest scripts/ -v \
 	)
 
-# Docker-related variables
-IMAGE_NAME := udacity_churn_model
-CONTAINER_NAME := udacity_churn_model_container
-
 # Docker commands
 
-# Builds the Docker image
+# Build the Docker image
 docker-build:
-	docker build --no-cache -t ${IMAGE_NAME} .
+	docker build -t ${DOCKER_IMAGE} -f ${DOCKERFILE} .
 
-# Runs the model inside Docker
+# Create the environment inside Docker
+docker-create-env:
+	docker run --rm --name ${CONTAINER_NAME} ${DOCKER_IMAGE} create-env
+
+# Run the modeling inside Docker
 docker-run-modeling:
-	docker run --name ${CONTAINER_NAME} ${IMAGE_NAME} make run-modeling
-    # docker run --rm --name ${CONTAINER_NAME} ${IMAGE_NAME} make run-modeling
-    # would automatically close container after finish
+	docker run --rm --name ${CONTAINER_NAME} ${DOCKER_IMAGE} run-modeling
 
-# Runs the tests inside Docker
+# Run tests inside Docker
 docker-run-tests:
-	docker run --name ${CONTAINER_NAME} ${IMAGE_NAME} make run-tests
+	docker run --name ${CONTAINER_NAME} ${DOCKER_IMAGE} run-tests
 
-# Copies results from Docker container to local "results_from_docker" folder
+# Copy results from Docker container to local "results_from_docker" folder
 docker-copy-results:
 	mkdir -p results_from_docker
-	docker cp ${CONTAINER_NAME}:/udacity_clean_code_task/images results_from_docker/images
-	docker cp ${CONTAINER_NAME}:/udacity_clean_code_task/models results_from_docker/models
-	docker cp ${CONTAINER_NAME}:/udacity_clean_code_task/logs results_from_docker/logs
+	docker cp ${CONTAINER_NAME}:/app/images results_from_docker/images
+	docker cp ${CONTAINER_NAME}:/app/models results_from_docker/models
+	docker cp ${CONTAINER_NAME}:/app/logs results_from_docker/logs
 
-# Stops the Docker container
+# Stops the Docker container and clean image
 docker-stop:
-	docker stop ${CONTAINER_NAME}
-	docker rm ${CONTAINER_NAME}
+	docker stop ${CONTAINER_NAME} || true
+	docker rm ${CONTAINER_NAME} || true
+	docker rmi ${DOCKER_IMAGE} || true
+
+
+# Run all steps in Docker
+docker-full-run: docker-build docker-create-env docker-run-modeling docker-run-tests docker-copy-results
+
+# Run all steps locally
+local-full-run: create-env run-modeling run-tests

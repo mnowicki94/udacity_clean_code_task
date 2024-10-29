@@ -1,20 +1,24 @@
-# Use the official Python 3.10 image
-FROM python:3.10
+# Use the official Python image
+FROM python:3.10-slim
 
-# Set the working directory in the container
-WORKDIR /udacity_clean_code_task
+# Set environment variables
+ENV ENV_NAME=env
 
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements file and Makefile into the container
 COPY requirements.txt ./
-RUN apt-get update && apt-get install -y make && rm -rf /var/lib/apt/lists/* && \
-    python -m venv env && \
-    ./env/bin/pip install --upgrade pip && \
-    ./env/bin/pip install -r requirements.txt
+COPY makefile ./
 
-# Copy the current directory contents into the container at /app
-COPY . /udacity_clean_code_task
+# Install required packages and Make
+RUN apt-get update && \
+    apt-get install -y make && \
+    pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-# Set the environment variable PATH to use the virtual environment
-ENV PATH="/udacity_clean_code_task/env/bin:$PATH"
+# Copy the rest of your application code
+COPY . .
 
-# Define the default command to keep the container running and allow Make commands
-CMD ["make"]
+# Set the entry point to make commands
+ENTRYPOINT ["make"]
